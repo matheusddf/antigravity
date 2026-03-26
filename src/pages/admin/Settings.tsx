@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { motion } from 'motion/react';
 import { supabase } from '@/lib/supabase';
 import { StoreConfig, DeliveryArea } from '@/types';
 import { Button } from '@/components/ui/Button';
@@ -88,32 +89,49 @@ export default function AdminSettings() {
         </form>
       </section>
 
-      <section className="space-y-6">
+      <section className="space-y-8">
         <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-display font-bold text-primary">Taxas de Entrega</h2>
-          <Button variant="outline" size="sm" onClick={handleAddArea}>
-            <Plus size={18} className="mr-2" /> Adicionar Bairro
+          <div className="space-y-1">
+            <h2 className="text-3xl font-display font-black italic uppercase tracking-tighter text-primary">Taxas de Entrega</h2>
+            <p className="text-gray-500 text-sm">Gerencie os bairros e valores de frete.</p>
+          </div>
+          <Button variant="outline" size="sm" onClick={handleAddArea} className="rounded-2xl gap-2">
+            <Plus size={18} /> Adicionar Bairro
           </Button>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {areas.map(area => (
-            <div key={area.id} className="glass-card p-4 flex items-center justify-between">
-              <div>
-                <p className="font-bold">{area.bairro}</p>
-                <p className="text-primary font-bold">{formatCurrency(area.valor)}</p>
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              key={area.id} 
+              className="bg-surface/40 backdrop-blur-xl p-6 rounded-[2rem] border border-white/5 flex items-center justify-between group hover:border-primary/30 transition-all"
+            >
+              <div className="space-y-1">
+                <p className="text-xl font-display font-black italic uppercase tracking-tight text-white">{area.bairro}</p>
+                <p className="text-primary font-black text-2xl tracking-tighter italic">{formatCurrency(area.valor)}</p>
               </div>
               <button 
                 onClick={async () => {
-                  await supabase.from('delivery_areas').delete().eq('id', area.id);
-                  fetchData();
+                  if (confirm(`Excluir taxa do bairro ${area.bairro}?`)) {
+                    await supabase.from('delivery_areas').delete().eq('id', area.id);
+                    fetchData();
+                  }
                 }}
-                className="p-2 text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
+                className="p-4 text-gray-500 hover:text-red-500 hover:bg-red-500/10 rounded-2xl transition-all"
               >
-                <Trash2 size={18} />
+                <Trash2 size={22} />
               </button>
-            </div>
+            </motion.div>
           ))}
         </div>
+
+        {areas.length === 0 && (
+          <div className="text-center py-20 bg-surface/20 rounded-[3rem] border border-dashed border-white/10">
+            <p className="text-gray-500 italic font-medium">Nenhum bairro cadastrado ainda.</p>
+          </div>
+        )}
       </section>
     </div>
   );

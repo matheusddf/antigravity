@@ -31,16 +31,39 @@ export default function MenuPage() {
 
   const categoryRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
 
+  const [recentOrder, setRecentOrder] = useState<{ name: string; product: string } | null>(null);
+  const [ordersCount, setOrdersCount] = useState(124);
+
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 100);
     window.addEventListener('scroll', handleScroll);
     
     // Show promo after 1 minute
     const timer = setTimeout(() => setShowPromo(true), 60000);
+
+    // Social Proof Simulation
+    const names = ['Matheus', 'Ana', 'Lucas', 'Julia', 'Gabriel', 'Beatriz', 'Felipe', 'Mariana', 'Ricardo', 'Fernanda'];
+    const productsList = ['X-Burger Futurista', 'Combo Galáctico', 'Batata Interestelar', 'Milkshake de Órbita', 'Double Bacon Neon'];
+    
+    const socialProofInterval = setInterval(() => {
+      const randomName = names[Math.floor(Math.random() * names.length)];
+      const randomProduct = productsList[Math.floor(Math.random() * productsList.length)];
+      
+      setRecentOrder({ name: randomName, product: randomProduct });
+      setOrdersCount(prev => prev + 1);
+      
+      // Play sound
+      const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2354/2354-preview.mp3');
+      audio.volume = 0.2;
+      audio.play().catch(() => {}); // Catch error if browser blocks autoplay
+      
+      setTimeout(() => setRecentOrder(null), 5000);
+    }, 15000); // Every 15 seconds
     
     return () => {
       window.removeEventListener('scroll', handleScroll);
       clearTimeout(timer);
+      clearInterval(socialProofInterval);
     };
   }, []);
 
@@ -79,6 +102,38 @@ export default function MenuPage() {
 
   return (
     <div className="min-h-screen bg-background pb-32">
+      {/* Social Proof Notification */}
+      <AnimatePresence>
+        {recentOrder && (
+          <motion.div
+            initial={{ x: -100, opacity: 0 }}
+            animate={{ x: 20, opacity: 1 }}
+            exit={{ x: -100, opacity: 0 }}
+            className="fixed bottom-24 left-0 z-[100] hidden md:flex items-center gap-4 bg-surface/80 backdrop-blur-2xl p-4 rounded-2xl border border-white/10 shadow-2xl"
+          >
+            <div className="w-12 h-12 bg-primary/20 rounded-xl flex items-center justify-center text-primary">
+              <ShoppingBag size={24} />
+            </div>
+            <div className="space-y-0.5">
+              <p className="text-xs font-black uppercase tracking-widest text-gray-500">Novo Pedido!</p>
+              <p className="text-sm text-white">
+                <span className="font-bold text-primary">{recentOrder.name}</span> acabou de pedir um <span className="font-bold">{recentOrder.product}</span>
+              </p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Orders Count Badge */}
+      <div className="max-w-4xl mx-auto px-4 mt-6">
+        <div className="inline-flex items-center gap-2 bg-surface/40 backdrop-blur-xl px-4 py-2 rounded-full border border-white/5">
+          <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse shadow-[0_0_10px_rgba(34,197,94,1)]" />
+          <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">
+            <span className="text-white">{ordersCount}</span> pedidos realizados hoje
+          </span>
+        </div>
+      </div>
+
       {/* Cover & Logo Section */}
       <div className="relative h-48 md:h-64 overflow-hidden">
         <img 
